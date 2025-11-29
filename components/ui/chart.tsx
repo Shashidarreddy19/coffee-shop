@@ -120,11 +120,28 @@ function ChartTooltipContent({
   labelKey,
 }: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
   React.ComponentProps<'div'> & {
+    active?: boolean
+    payload?: Array<{
+      name?: string
+      value?: number | string
+      payload?: Record<string, unknown> & { fill?: string }
+      dataKey?: string
+      color?: string
+    }>
+    label?: string | number
     hideLabel?: boolean
     hideIndicator?: boolean
     indicator?: 'line' | 'dot' | 'dashed'
     nameKey?: string
     labelKey?: string
+    labelFormatter?: (label: unknown) => React.ReactNode
+    formatter?: (
+      value: unknown,
+      name: unknown,
+      item?: unknown,
+      index?: number,
+      payload?: unknown,
+    ) => React.ReactNode
   }) {
   const { config } = useChart()
 
@@ -182,7 +199,7 @@ function ChartTooltipContent({
         {payload.map((item, index) => {
           const key = `${nameKey || item.name || item.dataKey || 'value'}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
-          const indicatorColor = color || item.payload.fill || item.color
+          const indicatorColor = color || item.payload?.fill || item.color
 
           return (
             <div
@@ -193,7 +210,7 @@ function ChartTooltipContent({
               )}
             >
               {formatter && item?.value !== undefined && item.name ? (
-                formatter(item.value, item.name, item, index, item.payload)
+                formatter(item.value, item.name, item, index, item.payload ?? undefined)
               ) : (
                 <>
                   {itemConfig?.icon ? (
@@ -256,11 +273,17 @@ function ChartLegendContent({
   payload,
   verticalAlign = 'bottom',
   nameKey,
-}: React.ComponentProps<'div'> &
-  Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
-    hideIcon?: boolean
-    nameKey?: string
-  }) {
+}: React.ComponentProps<'div'> & {
+  payload?: Array<{
+    value?: string | number
+    dataKey?: string
+    color?: string
+    type?: string
+  }>
+  verticalAlign?: 'top' | 'bottom'
+  hideIcon?: boolean
+  nameKey?: string
+}) {
   const { config } = useChart()
 
   if (!payload?.length) {
